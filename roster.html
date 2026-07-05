@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brightly — Employee Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0D;
+    --sidebar:#111114;
+    --card:#17171A;
+    --card-hover:#1E1E22;
+    --border:#252529;
+    --border-light:#2E2E34;
+    --text:#F4F4F5;
+    --muted:#8B8B95;
+    --muted-2:#6B6B75;
+    --blue:#3B7BF6;
+    --blue-soft:rgba(59,123,246,0.15);
+    --green:#22C55E;
+    --green-soft:rgba(34,197,94,0.12);
+    --red:#EF4444;
+    --red-soft:rgba(239,68,68,0.12);
+    --orange:#F59E0B;
+    --orange-soft:rgba(245,158,11,0.12);
+    --cyan:#38BDF8;
+    --radius:14px;
+    --radius-sm:10px;
+    --sidebar-w:240px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:var(--sidebar-w);
+    flex-shrink:0;
+    background:var(--sidebar);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:22px 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:4px 8px 20px;
+  }
+  .brand-icon{
+    width:32px;height:32px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#FFD166,#F59E0B);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+  }
+  .brand-name{font-size:18px;font-weight:700;letter-spacing:-0.3px;}
+  .sidebar-search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:9px 12px;
+    margin-bottom:20px;
+  }
+  .sidebar-search input{
+    flex:1;background:none;border:none;outline:none;
+    color:var(--text);font:inherit;font-size:13px;
+  }
+  .sidebar-search input::placeholder{color:var(--muted-2);}
+  .sidebar-search kbd{
+    font-size:10px;color:var(--muted);
+    background:var(--border);padding:2px 6px;border-radius:4px;
+  }
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:var(--radius-sm);
+    color:var(--muted);font-size:13.5px;font-weight:500;
+    cursor:pointer;border:none;background:transparent;
+    text-align:left;width:100%;transition:all .15s ease;
+  }
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:.7;}
+  .nav-item:hover{background:var(--card);color:var(--text);}
+  .nav-item.active{background:var(--card-hover);color:var(--text);}
+  .nav-item.active svg{opacity:1;}
+  .sidebar-footer{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:2px;}
+  .sidebar-footer .nav-item{font-size:13px;}
+
+  /* Main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:24px 32px 0;gap:16px;flex-wrap:wrap;
+  }
+  .page-title{font-size:28px;font-weight:700;margin:0;letter-spacing:-0.5px;}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    width:40px;height:40px;border-radius:var(--radius-sm);
+    border:1px solid var(--border);background:var(--card);
+    color:var(--muted);cursor:pointer;display:flex;
+    align-items:center;justify-content:center;position:relative;
+    transition:background .15s,border-color .15s;
+  }
+  .icon-btn:hover{background:var(--card-hover);color:var(--text);}
+  .icon-btn .dot{
+    position:absolute;top:8px;right:8px;width:7px;height:7px;
+    background:var(--red);border-radius:50%;border:2px solid var(--card);
+  }
+  .date-pill{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 14px;border-radius:var(--radius-sm);
+    border:1px solid var(--border);background:var(--card);
+    font-size:13px;color:var(--muted);cursor:pointer;
+  }
+  .btn{
+    font-family:inherit;font-size:13px;font-weight:600;
+    padding:10px 18px;border-radius:var(--radius-sm);
+    border:1px solid transparent;cursor:pointer;
+    transition:transform .06s,background .15s,opacity .15s;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-primary:hover{background:#2F6AE0;}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border);}
+  .btn-ghost:hover{background:var(--card);}
+  .btn-danger{background:transparent;color:var(--red);border-color:rgba(239,68,68,0.3);}
+  .btn-danger:hover{background:var(--red-soft);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+
+  .content{padding:24px 32px 40px;flex:1;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* Stat cards */
+  .stat-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:16px;margin-bottom:20px;
+  }
+  .stat-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px 22px;
+  }
+  .stat-label{font-size:13px;color:var(--muted);margin-bottom:10px;}
+  .stat-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;}
+  .stat-num{font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1;}
+  .stat-trend{
+    font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:3px;
+    padding:4px 8px;border-radius:6px;white-space:nowrap;
+  }
+  .stat-trend.up{color:var(--green);background:var(--green-soft);}
+  .stat-trend.down{color:var(--red);background:var(--red-soft);}
+  .stat-trend-sub{font-size:11px;color:var(--muted-2);margin-top:6px;}
+
+  /* Charts row */
+  .charts-row{
+    display:grid;grid-template-columns:1.45fr 1fr;
+    gap:16px;margin-bottom:20px;
+  }
+  .panel{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px 22px;
+  }
+  .panel-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;gap:12px;
+  }
+  .panel-head h3{font-size:15px;font-weight:600;margin:0;}
+  .panel-select{
+    font:inherit;font-size:12px;padding:6px 10px;
+    border-radius:8px;border:1px solid var(--border);
+    background:var(--bg);color:var(--muted);cursor:pointer;
+  }
+  .chart-wrap{position:relative;height:220px;}
+  .chart-wrap svg{width:100%;height:100%;}
+  .chart-tooltip{
+    position:absolute;background:#2A2A30;border:1px solid var(--border-light);
+    border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;
+    display:none;z-index:5;white-space:nowrap;
+  }
+  .chart-tooltip .tt-date{color:var(--muted);margin-bottom:2px;}
+  .chart-tooltip .tt-val{font-weight:700;color:var(--blue);}
+
+  /* Gauge */
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:6px 0 0;}
+  .gauge-svg{display:block;width:200px;height:110px;overflow:visible;}
+  .gauge-center{
+    text-align:center;margin-top:-4px;
+  }
+  .gauge-pct{font-size:28px;font-weight:700;letter-spacing:-1px;}
+  .gauge-label{font-size:12px;color:var(--muted);}
+  .gauge-legend{
+    display:flex;flex-direction:column;gap:10px;
+    width:100%;margin-top:18px;
+  }
+  .legend-item{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:12.5px;
+  }
+  .legend-left{display:flex;align-items:center;gap:8px;color:var(--muted);}
+  .legend-dot{width:8px;height:8px;border-radius:50%;}
+  .legend-val{font-weight:600;color:var(--text);}
+
+  /* Employee table panel */
+  .table-panel{margin-bottom:20px;}
+  .table-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;gap:12px;flex-wrap:wrap;
+  }
+  .table-head h3{font-size:15px;font-weight:600;margin:0;}
+  .table-head-right{display:flex;align-items:center;gap:10px;}
+  .table-search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:7px 12px;
+  }
+  .table-search input{
+    background:none;border:none;outline:none;
+    color:var(--text);font:inherit;font-size:13px;width:140px;
+  }
+  .table-search input::placeholder{color:var(--muted-2);}
+
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;font-size:11px;text-transform:uppercase;
+    letter-spacing:0.6px;color:var(--muted);font-weight:600;
+    padding:10px 14px;border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:14px;border-bottom:1px solid var(--border);
+    font-size:13.5px;vertical-align:middle;
+  }
+  tbody tr{transition:background .12s;cursor:pointer;}
+  tbody tr:hover{background:var(--card-hover);}
+  tbody tr:last-child td{border-bottom:none;}
+  .name-cell{display:flex;align-items:center;gap:12px;}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:600;color:#fff;
+  }
+  .emp-name{font-weight:600;font-size:13.5px;}
+  .emp-email{font-size:12px;color:var(--muted);margin-top:1px;}
+  .id-tag{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:500;
+  }
+  .status-dot{width:7px;height:7px;border-radius:50%;}
+  .status-fulltime .status-dot{background:var(--green);}
+  .status-freelance .status-dot{background:var(--cyan);}
+  .status-parttime .status-dot{background:var(--orange);}
+  .status-leave .status-dot{background:var(--blue);}
+  .status-inactive .status-dot{background:var(--red);}
+  .menu-btn{
+    width:32px;height:32px;border-radius:8px;border:none;
+    background:transparent;color:var(--muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .menu-btn:hover{background:var(--border);color:var(--text);}
+  .row-actions{display:flex;gap:4px;justify-content:flex-end;}
+
+  /* Toolbar & forms */
+  .page-head{margin-bottom:22px;}
+  .page-sub{color:var(--muted);font-size:14px;margin:6px 0 0;}
+  .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+  .input,.select{
+    font-family:inherit;font-size:13px;padding:9px 14px;
+    border-radius:var(--radius-sm);border:1px solid var(--border);
+    background:var(--card);color:var(--text);
+  }
+  .input:focus,.select:focus,textarea:focus{
+    outline:2px solid var(--blue);outline-offset:1px;
+  }
+  .input{flex:1;min-width:180px;}
+  .empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
+  .empty-state .big{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;}
+  .placeholder-view{
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;min-height:360px;text-align:center;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:40px;
+  }
+  .placeholder-view h2{font-size:20px;margin:16px 0 8px;}
+  .placeholder-view p{color:var(--muted);max-width:360px;line-height:1.6;}
+
+  /* Dept cards */
+  .dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+  .dept-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px;
+    border-top:3px solid var(--blue);
+  }
+  .dept-card h3{font-size:15px;margin:0 0 4px;}
+  .dept-meta{font-size:13px;color:var(--muted);margin-bottom:14px;}
+  .dept-person{font-size:13px;padding:5px 0;color:var(--text);}
+  .dept-person span{color:var(--muted);}
+
+  /* Drawer */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(4px);
+    display:none;align-items:stretch;justify-content:flex-end;z-index:100;
+  }
+  .overlay.open{display:flex;}
+  .drawer{
+    width:440px;max-width:94vw;background:var(--sidebar);
+    height:100%;overflow-y:auto;padding:28px 28px 40px;
+    border-left:1px solid var(--border);
+    animation:slideIn .2s ease;
+  }
+  @keyframes slideIn{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .drawer h2{font-size:20px;font-weight:700;margin:0 0 4px;}
+  .close-btn{
+    position:absolute;top:20px;right:20px;
+    background:var(--card);border:1px solid var(--border);
+    width:34px;height:34px;border-radius:8px;
+    font-size:16px;cursor:pointer;color:var(--muted);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .close-btn:hover{color:var(--text);background:var(--card-hover);}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:0.5px;
+    color:var(--muted);margin-bottom:6px;
+  }
+  .field input,.field select{width:100%;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field{flex:1;}
+  .drawer-actions{display:flex;gap:10px;margin-top:22px;}
+  .detail-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:14px 18px;margin:20px 0;
+  }
+  .detail-item .dlabel{
+    font-size:11px;text-transform:uppercase;letter-spacing:0.5px;
+    color:var(--muted);font-weight:600;margin-bottom:4px;
+  }
+  .detail-item .dvalue{font-size:14px;font-weight:500;}
+  .detail-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .file-code{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);margin-bottom:4px;}
+
+  @media(max-width:1100px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .charts-row{grid-template-columns:1fr;}
+  }
+  @media(max-width:768px){
+    .sidebar{width:72px;padding:16px 10px;}
+    .brand-name,.sidebar-search,.nav-item span,.sidebar-footer span{display:none;}
+    .nav-item{justify-content:center;padding:10px;}
+    .content,.topbar{padding-left:16px;padding-right:16px;}
+    .stat-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">☀</div>
+      <div class="brand-name">Brightly</div>
+    </div>
+    <div class="sidebar-search">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="global-search" placeholder="Search" oninput="handleGlobalSearch()">
+      <kbd>⌘K</kbd>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="schedule">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button class="nav-item" data-view="employees">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Employee</span>
+      </button>
+      <button class="nav-item" data-view="departments">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Projects</span>
+      </button>
+      <button class="nav-item" data-view="report">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        <span>Report</span>
+      </button>
+      <button class="nav-item" data-view="notes">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span>Notes</span>
+      </button>
+      <button class="nav-item" data-view="job">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        <span>Job</span>
+      </button>
+      <button class="nav-item" data-view="hiring">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        <span>Hiring</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg><span>Help Center</span></button>
+      <button class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Feedback</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 class="page-title" id="view-heading">Dashboard</h1>
+      <div class="topbar-actions">
+        <button class="icon-btn" title="Search">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="icon-btn" title="Notifications">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <div class="date-pill">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span id="date-range">01 Nov – 2025</span>
+        </div>
+        <button class="btn btn-primary" onclick="openDrawer()">+ Add New</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Dashboard -->
+      <div class="view active" id="view-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Employee</div>
+            <div class="stat-row">
+              <div class="stat-num" id="stat-total">0</div>
+              <div class="stat-trend up" id="trend-total">+0%</div>
+            </div>
+            <div class="stat-trend-sub">Last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">New Employee</div>
+            <div class="stat-row">
+              <div class="stat-num" id="stat-new">0</div>
+              <div class="stat-trend up" id="trend-new">+0%</div>
+            </div>
+            <div class="stat-trend-sub">Last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Man Employee</div>
+            <div class="stat-row">
+              <div class="stat-num" id="stat-male">0</div>
+              <div class="stat-trend up" id="trend-male">+0%</div>
+            </div>
+            <div class="stat-trend-sub">Last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Woman Employee</div>
+            <div class="stat-row">
+              <div class="stat-num" id="stat-female">0%</div>
+              <div class="stat-trend down" id="trend-female">-0%</div>
+            </div>
+            <div class="stat-trend-sub">Last month</div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Work Performance</h3>
+              <select class="panel-select" id="perf-range" onchange="renderPerformanceChart()">
+                <option value="month">Last Month</option>
+                <option value="quarter">Last Quarter</option>
+              </select>
+            </div>
+            <div class="chart-wrap" id="perf-chart">
+              <div class="chart-tooltip" id="perf-tooltip"><div class="tt-date"></div><div class="tt-val"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Attendance Overview</h3>
+              <select class="panel-select" id="att-range">
+                <option>Today</option>
+                <option>This Week</option>
+              </select>
+            </div>
+            <div class="gauge-wrap" id="attendance-gauge"></div>
+          </div>
+        </div>
+
+        <div class="panel table-panel">
+          <div class="table-head">
+            <h3>All Employee</h3>
+            <div class="table-head-right">
+              <div class="table-search">
+                <svg width="14" height="14" fill="none" stroke="var(--muted)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="dash-search" placeholder="Search" oninput="renderDashboardTable()">
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('employees')">See All</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>ID</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="dash-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Employees -->
+      <div class="view" id="view-employees">
+        <p class="page-sub">Search, filter, and manage every employee record.</p>
+        <div class="toolbar">
+          <input class="input" id="search-input" placeholder="Search by name, email, or role…" oninput="renderEmployees()">
+          <select class="select" id="filter-dept" onchange="renderEmployees()"><option value="">All Departments</option></select>
+          <select class="select" id="filter-status" onchange="renderEmployees()">
+            <option value="">All Statuses</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Part-time">Part-time</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="panel" style="padding:0;overflow:hidden;">
+          <table>
+            <thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="employee-tbody"></tbody>
+          </table>
+        </div>
+        <div id="empty-employees" class="empty-state" style="display:none;">
+          <div class="big">No employees match</div>
+          <div>Try clearing your search or filters.</div>
+        </div>
+      </div>
+
+      <!-- Departments / Projects -->
+      <div class="view" id="view-departments">
+        <p class="page-sub">Every department currently represented on the roster.</p>
+        <div class="dept-grid" id="departments-grid"></div>
+      </div>
+
+      <!-- Placeholder views -->
+      <div class="view" id="view-schedule"><div class="placeholder-view"><svg width="48" height="48" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><h2>Schedule</h2><p>Shift planning and calendar views will appear here in a future update.</p></div></div>
+      <div class="view" id="view-report"><div class="placeholder-view"><svg width="48" height="48" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><h2>Reports</h2><p>Export headcount, payroll, and performance reports from this section.</p></div></div>
+      <div class="view" id="view-notes"><div class="placeholder-view"><svg width="48" height="48" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><h2>Notes</h2><p>Team notes and internal memos will be managed here.</p></div></div>
+      <div class="view" id="view-job"><div class="placeholder-view"><svg width="48" height="48" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><h2>Job Listings</h2><p>Open roles and job descriptions will be listed here.</p></div></div>
+      <div class="view" id="view-hiring"><div class="placeholder-view"><svg width="48" height="48" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg><h2>Hiring Pipeline</h2><p>Track candidates and interview stages in the hiring pipeline.</p></div></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Drawer -->
+<div class="overlay" id="form-overlay" style="position:fixed;">
+  <div class="drawer" style="position:relative;">
+    <button class="close-btn" onclick="closeDrawer()">✕</button>
+    <h2 id="drawer-title">Add Employee</h2>
+    <p class="page-sub" id="drawer-sub" style="margin-bottom:18px;">Fill in the details below.</p>
+    <input type="hidden" id="f-id">
+    <div class="field"><label>Full Name</label><input class="input" id="f-name" placeholder="e.g. Cody Fisher"></div>
+    <div class="field-row">
+      <div class="field"><label>Email</label><input class="input" id="f-email" placeholder="cody@company.com"></div>
+      <div class="field"><label>Phone</label><input class="input" id="f-phone" placeholder="+1 555 0100"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Gender</label>
+        <select class="select" id="f-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+      <div class="field"><label>Department</label>
+        <select class="select" id="f-dept">
+          <option>Engineering</option><option>Design</option><option>Sales</option><option>Marketing</option>
+          <option>Human Resources</option><option>Finance</option><option>Operations</option><option>Support</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Job Title</label><input class="input" id="f-title" placeholder="e.g. Web Designer"></div>
+      <div class="field"><label>Status</label>
+        <select class="select" id="f-status">
+          <option>Full-time</option><option>Freelance</option><option>Part-time</option>
+          <option>On Leave</option><option>Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date Joined</label><input class="input" type="date" id="f-joined"></div>
+      <div class="field"><label>Annual Salary (₹)</label><input class="input" type="number" id="f-salary" placeholder="1200000"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn btn-primary" onclick="saveEmployee()" style="flex:1;">Save Employee</button>
+      <button class="btn btn-ghost" onclick="closeDrawer()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Drawer -->
+<div class="overlay" id="detail-overlay" style="position:fixed;">
+  <div class="drawer" style="position:relative;">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    <div class="file-code" id="d-code">#EP0000</div>
+    <h2 id="d-name">—</h2>
+    <p class="page-sub" id="d-title">—</p>
+    <span class="status-pill" id="d-status"><span class="status-dot"></span><span id="d-status-text">Full-time</span></span>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="dlabel">Department</div><div class="dvalue" id="d-dept">—</div></div>
+      <div class="detail-item"><div class="dlabel">Gender</div><div class="dvalue" id="d-gender">—</div></div>
+      <div class="detail-item"><div class="dlabel">Date Joined</div><div class="dvalue" id="d-joined">—</div></div>
+      <div class="detail-item"><div class="dlabel">Email</div><div class="dvalue" id="d-email">—</div></div>
+      <div class="detail-item"><div class="dlabel">Phone</div><div class="dvalue" id="d-phone">—</div></div>
+      <div class="detail-item"><div class="dlabel">Annual Salary</div><div class="dvalue" id="d-salary">—</div></div>
+    </div>
+    <hr class="detail-divider">
+    <div class="drawer-actions">
+      <button class="btn btn-ghost" onclick="editFromDetail()" style="flex:1;">Edit</button>
+      <button class="btn btn-danger" onclick="deleteFromDetail()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEPT_COLORS = {
+  'Engineering':'#3B7BF6','Design':'#A855F7','Sales':'#F59E0B','Marketing':'#EF4444',
+  'Human Resources':'#38BDF8','Finance':'#6B7280','Operations':'#22C55E','Support':'#EC4899'
+};
+const AVATAR_GRADIENTS = [
+  ['#3B7BF6','#6366F1'],['#A855F7','#EC4899'],['#F59E0B','#EF4444'],
+  ['#22C55E','#14B8A6'],['#38BDF8','#3B7BF6'],['#EC4899','#F59E0B']
+];
+let employees = [], editingId = null, currentDetailId = null;
+const STORAGE_KEY = 'roster:employees', SEQ_KEY = 'roster:seq';
+let seq = 1;
+
+const seed = () => ([
+  {id:cryptoId(),code:'#EP5659',name:'Cody Fisher',email:'cody.fisher@company.com',phone:'+1 555 0101',gender:'Male',department:'Design',title:'Web Designer',status:'Full-time',joined:'2023-06-12',salary:1200000},
+  {id:cryptoId(),code:'#AP2589',name:'Jane Cooper',email:'jane.cooper@company.com',phone:'+1 555 0102',gender:'Female',department:'Design',title:'Product Designer',status:'Freelance',joined:'2024-01-20',salary:950000},
+  {id:cryptoId(),code:'#DS9735',name:'Albert Flores',email:'albert.flores@company.com',phone:'+1 555 0103',gender:'Male',department:'Design',title:'Lead Designer',status:'Full-time',joined:'2022-09-05',salary:1800000},
+  {id:cryptoId(),code:'#EP4521',name:'Priya Sharma',email:'priya.sharma@company.com',phone:'+91 98200 11223',gender:'Female',department:'Engineering',title:'Senior Software Engineer',status:'Full-time',joined:'2022-03-14',salary:1800000},
+  {id:cryptoId(),code:'#EP4522',name:'Rohan Mehta',email:'rohan.mehta@company.com',phone:'+91 99887 66554',gender:'Male',department:'Sales',title:'Regional Sales Manager',status:'Full-time',joined:'2021-07-01',salary:1500000},
+  {id:cryptoId(),code:'#EP4523',name:'Ananya Iyer',email:'ananya.iyer@company.com',phone:'+91 90123 45678',gender:'Female',department:'Human Resources',title:'HR Business Partner',status:'On Leave',joined:'2023-01-09',salary:1100000},
+  {id:cryptoId(),code:'#EP4524',name:'Karan Malhotra',email:'karan.malhotra@company.com',phone:'+91 91234 56780',gender:'Male',department:'Finance',title:'Financial Analyst',status:'Full-time',joined:'2023-11-20',salary:950000},
+  {id:cryptoId(),code:'#EP4525',name:'Neha Kulkarni',email:'neha.kulkarni@company.com',phone:'+91 90909 80808',gender:'Female',department:'Marketing',title:'Content Strategist',status:'Inactive',joined:'2020-05-18',salary:900000},
+]);
+
+function cryptoId(){ return 'e' + Math.random().toString(36).slice(2,10); }
+function initials(name){ return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
+function avatarGradient(name){
+  const i = name.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % AVATAR_GRADIENTS.length;
+  const [a,b] = AVATAR_GRADIENTS[i];
+  return `linear-gradient(135deg,${a},${b})`;
+}
+function fmtDate(d){ if(!d) return '—'; return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtMoney(n){ if(!n) return '—'; return '₹' + Number(n).toLocaleString('en-IN'); }
+function statusClass(s){
+  const m = {'Full-time':'status-fulltime','Freelance':'status-freelance','Part-time':'status-parttime','On Leave':'status-leave','Inactive':'status-inactive','Active':'status-fulltime'};
+  return m[s] || 'status-fulltime';
+}
+function migrateEmployee(e){
+  const statusMap = {'Active':'Full-time','On Leave':'On Leave','Inactive':'Inactive'};
+  if(statusMap[e.status]) e.status = statusMap[e.status];
+  if(!e.gender) e.gender = 'Other';
+  if(e.code && !e.code.startsWith('#')) e.code = '#' + e.code.replace(/^EMP-/,'EP');
+  return e;
+}
+
+async function readStorage(key, fallback){
+  try{ if(window.storage?.get){ const r = await window.storage.get(key,false); if(r?.value !== undefined) return r.value; } }catch(e){}
+  try{ return localStorage.getItem(key); }catch(e){ return fallback; }
+}
+async function writeStorage(key, value){
+  try{ if(window.storage?.set){ await window.storage.set(key,value,false); return; } }catch(e){}
+  try{ localStorage.setItem(key,value); }catch(e){ console.error(e); }
+}
+
+async function loadData(){
+  let stored = await readStorage(STORAGE_KEY, null);
+  employees = stored ? JSON.parse(stored).map(migrateEmployee) : null;
+  if(!employees){ employees = seed(); await persist(); }
+  let storedSeq = await readStorage(SEQ_KEY, null);
+  seq = storedSeq ? JSON.parse(storedSeq) : employees.length + 1;
+  updateDateRange();
+  renderAll();
+}
+
+async function persist(){
+  await writeStorage(STORAGE_KEY, JSON.stringify(employees));
+}
+async function persistSeq(){
+  await writeStorage(SEQ_KEY, JSON.stringify(seq));
+}
+
+function updateDateRange(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const fmt = d => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  document.getElementById('date-range').textContent = `${fmt(start)} – ${now.getFullYear()}`;
+}
+
+function pctChange(curr, prev){
+  if(prev === 0) return curr > 0 ? 100 : 0;
+  return ((curr - prev) / prev) * 100;
+}
+function setTrend(elId, pct){
+  const el = document.getElementById(elId);
+  const sign = pct >= 0 ? '+' : '';
+  el.textContent = sign + pct.toFixed(2) + '%';
+  el.className = 'stat-trend ' + (pct >= 0 ? 'up' : 'down');
+}
+
+function monthBounds(offset){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
+  return {start, end};
+}
+function joinedInRange(e, start, end){
+  const d = new Date(e.joined);
+  return d >= start && d <= end;
+}
+
+function renderAll(){
+  renderDashboard();
+  populateDeptFilter();
+  renderEmployees();
+  renderDepartmentsView();
+  renderPerformanceChart();
+  renderAttendanceGauge();
+}
+
+function renderDashboard(){
+  const total = employees.length;
+  const thisM = monthBounds(0), lastM = monthBounds(-1);
+  const newThis = employees.filter(e => joinedInRange(e, thisM.start, thisM.end)).length;
+  const newLast = employees.filter(e => joinedInRange(e, lastM.start, lastM.end)).length;
+  const males = employees.filter(e => e.gender === 'Male').length;
+  const females = employees.filter(e => e.gender === 'Female').length;
+  const femalePct = total ? Math.round(females / total * 100) : 0;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-new').textContent = newThis;
+  document.getElementById('stat-male').textContent = males;
+  document.getElementById('stat-female').textContent = femalePct + '%';
+
+  setTrend('trend-total', pctChange(total, Math.max(1, total - newThis)));
+  setTrend('trend-new', pctChange(newThis, newLast || 1));
+  setTrend('trend-male', pctChange(males, Math.max(1, males - 1)));
+  setTrend('trend-female', pctChange(femalePct, Math.max(1, femalePct + 2)));
+
+  renderDashboardTable();
+}
+
+function renderDashboardTable(){
+  const q = (document.getElementById('dash-search')?.value || '').toLowerCase();
+  const filtered = employees.filter(e =>
+    !q || e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q) || e.title.toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  document.getElementById('dash-tbody').innerHTML = filtered.map(e => rowHtml(e, true)).join('') ||
+    '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px;">No employees yet.</td></tr>';
+}
+
+function rowHtml(e, compact){
+  const sc = statusClass(e.status);
+  return `<tr onclick="openDetail('${e.id}')">
+    <td><div class="name-cell">
+      <div class="avatar" style="background:${avatarGradient(e.name)}">${initials(e.name)}</div>
+      <div><div class="emp-name">${escapeHtml(e.name)}</div><div class="emp-email">${escapeHtml(e.email)}</div></div>
+    </div></td>
+    <td class="id-tag">${escapeHtml(e.code)}</td>
+    <td>${escapeHtml(e.title)}</td>
+    <td><span class="status-pill ${sc}"><span class="status-dot"></span>${escapeHtml(e.status)}</span></td>
+    <td><div class="row-actions">
+      ${compact ? `<button class="menu-btn" onclick="event.stopPropagation();openDetail('${e.id}')" title="More">⋯</button>` :
+      `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer('${e.id}')">Edit</button>
+       <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();removeEmployee('${e.id}')">Delete</button>`}
+    </div></td>
+  </tr>`;
+}
+
+function renderPerformanceChart(){
+  const wrap = document.getElementById('perf-chart');
+  const tooltip = document.getElementById('perf-tooltip');
+  const range = document.getElementById('perf-range').value;
+  const days = range === 'quarter' ? 12 : 12;
+  const now = new Date();
+  const data = [];
+
+  for(let i = days - 1; i >= 0; i--){
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const active = employees.filter(e => {
+      const joined = new Date(e.joined);
+      return joined <= d && e.status !== 'Inactive';
+    }).length;
+    const pct = employees.length ? Math.round(active / employees.length * 80) : 0;
+    data.push({day: String(d.getDate()).padStart(2,'0'), date: d, pct});
+  }
+
+  const W = 560, H = 200, pad = {t:20,r:20,b:30,l:40};
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const maxY = 80;
+  const pts = data.map((d,i) => ({
+    x: pad.l + (i / (data.length - 1)) * iw,
+    y: pad.t + ih - (d.pct / maxY) * ih,
+    ...d
+  }));
+
+  let pathD = `M ${pts[0].x} ${pts[0].y}`;
+  for(let i = 1; i < pts.length; i++) pathD += ` L ${pts[i].x} ${pts[i].y}`;
+  const areaD = pathD + ` L ${pts[pts.length-1].x} ${pad.t+ih} L ${pts[0].x} ${pad.t+ih} Z`;
+
+  const gridLines = [0,20,40,60,80].map(v => {
+    const y = pad.t + ih - (v/maxY)*ih;
+    return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#252529" stroke-width="1"/>
+      <text x="${pad.l-8}" y="${y+4}" fill="#6B6B75" font-size="10" text-anchor="end">${v}%</text>`;
+  }).join('');
+
+  const xLabels = pts.filter((_,i) => i % 2 === 0 || i === pts.length-1).map(p =>
+    `<text x="${p.x}" y="${H-8}" fill="#6B6B75" font-size="10" text-anchor="middle">${p.day}</text>`
+  ).join('');
+
+  const circles = pts.map((p,i) =>
+    `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#3B7BF6" stroke="#17171A" stroke-width="2"
+      data-i="${i}" class="perf-dot" style="cursor:pointer;"/>`
+  ).join('');
+
+  wrap.querySelector('svg')?.remove();
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `${gridLines}${xLabels}
+    <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3B7BF6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#3B7BF6" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${areaD}" fill="url(#areaGrad)"/>
+    <path d="${pathD}" fill="none" stroke="#3B7BF6" stroke-width="2.5" stroke-linejoin="round"/>
+    ${circles}`;
+  wrap.appendChild(svg);
+
+  svg.querySelectorAll('.perf-dot').forEach(dot => {
+    dot.addEventListener('mouseenter', ev => {
+      const p = pts[+dot.dataset.i];
+      const month = p.date.toLocaleDateString('en-US',{month:'long',day:'2-digit'});
+      tooltip.querySelector('.tt-date').textContent = `${month} – ${p.date.getFullYear()}`;
+      tooltip.querySelector('.tt-val').textContent = p.pct + '%';
+      tooltip.style.display = 'block';
+      tooltip.style.left = (ev.offsetX + 12) + 'px';
+      tooltip.style.top = (ev.offsetY - 40) + 'px';
+    });
+    dot.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+  });
+}
+
+function renderAttendanceGauge(){
+  const total = employees.length || 1;
+  const onTime = employees.filter(e => e.status === 'Full-time' || e.status === 'Active').length;
+  const delay = employees.filter(e => e.status === 'Part-time' || e.status === 'Freelance').length;
+  const leave = employees.filter(e => e.status === 'On Leave').length;
+  const inactive = employees.filter(e => e.status === 'Inactive').length;
+  const attended = onTime + delay;
+  const attPct = Math.round((attended / total) * 100);
+
+  const pOn = (onTime/total*100), pDelay = (delay/total*100), pLeave = (leave/total*100);
+  const cx=100, cy=95, r=70;
+  const arc = (startPct, sweepPct, color) => {
+    const s = Math.PI + (startPct/100)*Math.PI;
+    const e = s + (sweepPct/100)*Math.PI;
+    const x1 = cx + r*Math.cos(s), y1 = cy + r*Math.sin(s);
+    const x2 = cx + r*Math.cos(e), y2 = cy + r*Math.sin(e);
+    if (sweepPct <= 0) return '';
+    const large = sweepPct > 100 ? 1 : 0;
+    return `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"/>`;
+  };
+
+  document.getElementById('attendance-gauge').innerHTML = `
+    <svg class="gauge-svg" viewBox="0 0 200 110">
+      <path d="M 30 95 A 70 70 0 0 1 170 95" fill="none" stroke="#252529" stroke-width="14" stroke-linecap="round"/>
+      ${arc(0, pOn, '#22C55E')}
+      ${arc(pOn, pDelay, '#F59E0B')}
+      ${arc(pOn+pDelay, pLeave, '#3B7BF6')}
+    </svg>
+    <div class="gauge-center"><div class="gauge-pct">${attPct}%</div><div class="gauge-label">Total Attendance</div></div>
+    <div class="gauge-legend">
+      <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#22C55E"></span>On Time</div><span class="legend-val">${pOn.toFixed(1)}%</span></div>
+      <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#F59E0B"></span>Delay Time</div><span class="legend-val">${pDelay.toFixed(1)}%</span></div>
+      <div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:#3B7BF6"></span>On Leave</div><span class="legend-val">${pLeave.toFixed(1)}%</span></div>
+    </div>`;
+}
+
+function populateDeptFilter(){
+  const sel = document.getElementById('filter-dept');
+  const current = sel.value;
+  const depts = [...new Set(employees.map(e=>e.department))].sort();
+  sel.innerHTML = '<option value="">All Departments</option>' + depts.map(d=>`<option ${d===current?'selected':''}>${d}</option>`).join('');
+}
+
+function renderEmployees(){
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const deptFilter = document.getElementById('filter-dept').value;
+  const statusFilter = document.getElementById('filter-status').value;
+  const filtered = employees.filter(e => {
+    const matchesQ = !q || e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q) || e.title.toLowerCase().includes(q);
+    return matchesQ && (!deptFilter || e.department === deptFilter) && (!statusFilter || e.status === statusFilter);
+  });
+  document.getElementById('empty-employees').style.display = filtered.length ? 'none' : 'block';
+  document.getElementById('employee-tbody').innerHTML = filtered.map(e => rowHtml(e, false)).join('');
+}
+
+function renderDepartmentsView(){
+  const byDept = {};
+  employees.forEach(e => { (byDept[e.department] = byDept[e.department]||[]).push(e); });
+  document.getElementById('departments-grid').innerHTML = Object.keys(byDept).sort().map(d => `
+    <div class="dept-card" style="border-top-color:${DEPT_COLORS[d]||'var(--blue)'}">
+      <h3>${escapeHtml(d)}</h3>
+      <div class="dept-meta">${byDept[d].length} ${byDept[d].length===1?'person':'people'}</div>
+      ${byDept[d].slice(0,5).map(e=>`<div class="dept-person">${escapeHtml(e.name)} <span>— ${escapeHtml(e.title)}</span></div>`).join('')}
+      ${byDept[d].length>5?`<div class="dept-person" style="color:var(--muted);">+${byDept[d].length-5} more</div>`:''}
+    </div>`).join('') || '<p style="color:var(--muted);">No departments yet.</p>';
+}
+
+function openDrawer(id){
+  editingId = id || null;
+  const overlay = document.getElementById('form-overlay');
+  if(id){
+    const e = employees.find(x=>x.id===id);
+    document.getElementById('drawer-title').textContent = 'Edit Employee';
+    document.getElementById('drawer-sub').textContent = 'Update ' + e.name + '\u2019s record.';
+    document.getElementById('f-id').value = e.id;
+    document.getElementById('f-name').value = e.name;
+    document.getElementById('f-email').value = e.email;
+    document.getElementById('f-phone').value = e.phone;
+    document.getElementById('f-gender').value = e.gender || 'Other';
+    document.getElementById('f-dept').value = e.department;
+    document.getElementById('f-title').value = e.title;
+    document.getElementById('f-status').value = e.status;
+    document.getElementById('f-joined').value = e.joined;
+    document.getElementById('f-salary').value = e.salary;
+  } else {
+    document.getElementById('drawer-title').textContent = 'Add Employee';
+    document.getElementById('drawer-sub').textContent = 'Create a new employee record.';
+    ['f-id','f-name','f-email','f-phone','f-title','f-salary'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('f-gender').value = 'Male';
+    document.getElementById('f-dept').value = 'Design';
+    document.getElementById('f-status').value = 'Full-time';
+    document.getElementById('f-joined').value = new Date().toISOString().slice(0,10);
+  }
+  overlay.classList.add('open');
+}
+function closeDrawer(){ document.getElementById('form-overlay').classList.remove('open'); }
+
+async function saveEmployee(){
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  if(!name || !email){ alert('Name and email are required.'); return; }
+  const id = document.getElementById('f-id').value;
+  const data = {
+    name, email,
+    phone: document.getElementById('f-phone').value.trim(),
+    gender: document.getElementById('f-gender').value,
+    department: document.getElementById('f-dept').value,
+    title: document.getElementById('f-title').value.trim() || 'Team Member',
+    status: document.getElementById('f-status').value,
+    joined: document.getElementById('f-joined').value,
+    salary: Number(document.getElementById('f-salary').value) || 0,
+  };
+  if(id){
+    const idx = employees.findIndex(e=>e.id===id);
+    employees[idx] = {...employees[idx], ...data};
+  } else {
+    const code = '#EP' + String(seq).padStart(4,'0');
+    seq++; await persistSeq();
+    employees.push({id:cryptoId(), code, ...data});
+  }
+  await persist();
+  closeDrawer();
+  renderAll();
+}
+
+async function removeEmployee(id){
+  if(!confirm('Delete this employee record? This cannot be undone.')) return;
+  employees = employees.filter(e=>e.id!==id);
+  await persist();
+  renderAll();
+}
+
+function openDetail(id){
+  const e = employees.find(x=>x.id===id);
+  if(!e) return;
+  currentDetailId = id;
+  document.getElementById('d-code').textContent = e.code;
+  document.getElementById('d-name').textContent = e.name;
+  document.getElementById('d-title').textContent = e.title;
+  const pill = document.getElementById('d-status');
+  pill.className = 'status-pill ' + statusClass(e.status);
+  document.getElementById('d-status-text').textContent = e.status;
+  document.getElementById('d-dept').textContent = e.department;
+  document.getElementById('d-gender').textContent = e.gender || '—';
+  document.getElementById('d-joined').textContent = fmtDate(e.joined);
+  document.getElementById('d-email').textContent = e.email;
+  document.getElementById('d-phone').textContent = e.phone || '—';
+  document.getElementById('d-salary').textContent = fmtMoney(e.salary);
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detail-overlay').classList.remove('open'); currentDetailId=null; }
+function editFromDetail(){ closeDetail(); openDrawer(currentDetailId); }
+async function deleteFromDetail(){ closeDetail(); await removeEmployee(currentDetailId); }
+
+const VIEW_TITLES = {
+  dashboard:'Dashboard', schedule:'Schedule', employees:'Employee',
+  departments:'Projects', report:'Report', notes:'Notes', job:'Job', hiring:'Hiring'
+};
+function navigateTo(view){
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.getElementById('view-heading').textContent = VIEW_TITLES[view] || 'Dashboard';
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=> navigateTo(btn.dataset.view));
+});
+
+function handleGlobalSearch(){
+  const q = document.getElementById('global-search').value;
+  navigateTo('employees');
+  document.getElementById('search-input').value = q;
+  renderEmployees();
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); document.getElementById('global-search').focus(); }
+});
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+['form-overlay','detail-overlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', ev=>{
+    if(ev.target.id===id) id==='form-overlay'?closeDrawer():closeDetail();
+  });
+});
+
+loadData();
+</script>
+</body>
+</html>
